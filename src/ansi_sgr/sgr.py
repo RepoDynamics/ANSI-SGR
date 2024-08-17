@@ -1,12 +1,4 @@
-"""
-
-References
-----------
-- https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
-"""
-
-from typing import Optional
-import re
+import re as _re
 
 
 _TEXT_STYLE = {
@@ -105,7 +97,7 @@ def format(text, control_sequence: str):
     return f"{control_sequence}{text}{RESET}"
 
 
-def remove_format(text: str):
+def remove(text: str):
     """
     Remove ANSI escape sequences from a string.
 
@@ -131,4 +123,4 @@ def remove_format(text: str):
     This part matches that ending character. This character typically indicates what action
     should be taken (e.g., change color, move cursor, clear screen, etc.).
     """
-    return re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]').sub('', text)
+    return _re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]').sub('', text)
