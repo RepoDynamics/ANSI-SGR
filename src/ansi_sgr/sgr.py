@@ -98,8 +98,7 @@ def format(text, control_sequence: str):
 
 
 def remove(text: str):
-    """
-    Remove ANSI escape sequences from a string.
+    """Remove ANSI escape sequences from a string.
 
     Parameters
     ----------
