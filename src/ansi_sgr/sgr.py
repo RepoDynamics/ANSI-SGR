@@ -46,7 +46,10 @@ def create_sequence_from_code(code: list[Stringable] | Stringable):
     return f"\033[{code}m"
 
 
-def apply_sequence(text: Stringable, sequence: Stringable, reset: bool = True):
+def apply_sequence(text: Stringable, sequence: Stringable, per_line: bool = True, reset: bool = True):
+    if per_line:
+        lines = [f"{sequence}{line}{reset_sequence() if reset else ''}" for line in str(text).split("\n")]
+        return "\n".join(lines)
     return f"{sequence}{text}{reset_sequence() if reset else ''}"
 
 

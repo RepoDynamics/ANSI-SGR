@@ -45,6 +45,8 @@ def code_block(
     line_width: int = 70,
 ):
     title = str(title)
+    code = str(code)
+    code_lines = code.splitlines()
     if emoji:
         title = f"{emoji} {title}"
     title_section = block(
@@ -62,31 +64,24 @@ def code_block(
         margin_bottom=title_margin_bottom,
         margin_left=margin_left,
         margin_right=margin_right,
-        line_width=line_width,
+        line_width=max(max(_wcwidth.wcswidth(line) for line in code_lines), line_width),
         align=title_align,
     )
-    code = str(code)
-    line_count = len(code.splitlines())
+    line_count = len(code_lines)
     number_width = len(str(line_num_start + line_count - 1))
     if margin_left is None:
-        margin_left = margin_right
+        margin_left = margin_right or 0
     if margin_right is None:
-        margin_right = margin_left
-    if margin_left is None:
-        margin_left = margin_right
-    if margin_right is None:
-        margin_right = margin_left
-    line_width_adjusted = line_width - (margin_left or 0) - (margin_right or 0) - _wcwidth.wcswidth(
-        str(char_left)) - _wcwidth.wcswidth(str(char_right))
+        margin_right = margin_left or 0
+    line_width_adjusted = max(max(_wcwidth.wcswidth(line) for line in code_lines), line_width)
     lines = _textwrap.fill(
-        text=code,
+        code,
         width=line_width_adjusted - ((number_width + 2) if line_num else 0),
         expand_tabs=True,
         tabsize=4,
         replace_whitespace=False,
         drop_whitespace=False,
     ).splitlines()
-    code_start_idx = 0
     if char_left is None:
         char_left = char_right or ""
     if char_right is None:
@@ -102,7 +97,7 @@ def code_block(
         extra_padding = char_width - screen_width
         width = line_width_adjusted + extra_padding - (number_width + 2 if line_num else 0)
         line = line.ljust(width)
-        if emphasize_lines and line_idx - code_start_idx + 1 in emphasize_lines:
+        if emphasize_lines and line_idx + 1 in emphasize_lines:
             sequence = _sgr.create_sequence(line_styles, line_color, line_bg_color)
             line = _sgr.apply_sequence(line, sequence, reset=True)
         if line_num:
@@ -117,7 +112,6 @@ def code_block(
     margin_line_content = " " * (line_width_adjusted + (margin_left or 0) + (margin_right or 0))
     if code_margin_top:
         formatted_lines = [f"{char_left}{margin_line_content}{char_right}"] * code_margin_top + formatted_lines
-        code_start_idx = code_margin_top
     if code_margin_bottom:
         formatted_lines = formatted_lines + [f"{char_left}{margin_line_content}{char_right}"] * code_margin_bottom
     if char_top is None:
@@ -125,18 +119,15 @@ def code_block(
     if char_bottom is None:
         char_bottom = char_top or ""
     if char_top:
-        total_line_width = line_width - _wcwidth.wcswidth(
-            str(char_top_left)) - _wcwidth.wcswidth(str(char_top_right))
+        total_line_width = line_width_adjusted + margin_left + margin_right
         line_top = f"{char_top_left}{char_top * total_line_width}{char_top_right}"
         formatted_lines.insert(0, line_top)
     if char_bottom:
-        total_line_width = line_width - _wcwidth.wcswidth(
-            str(char_bottom_left)) - _wcwidth.wcswidth(str(char_bottom_right))
+        total_line_width = line_width_adjusted + margin_left + margin_right
         line_bottom = f"{char_bottom_left}{char_bottom * total_line_width}{char_bottom_right}"
         formatted_lines.append(line_bottom)
     body_section = "\n".join(formatted_lines)
     return f"{title_section}\n{body_section}"
-
 
 
 def admonition(
@@ -185,7 +176,7 @@ def admonition(
         margin_bottom=title_margin_bottom,
         margin_left=margin_left,
         margin_right=margin_right,
-        line_width=line_width,
+        line_width=max(max(_wcwidth.wcswidth(_sgr.remove_sequence(line)) for line in str(text).splitlines()), line_width),
         align=title_align,
     )
     body_section = block(
@@ -224,9 +215,9 @@ def block(
     char_bottom_right: Stringable | None = "┛",
     margin_top: int | None = None,
     margin_bottom: int | None = None,
-    margin_left: int | None = None,
-    margin_right: int | None = None,
-    line_width: int = 50,
+    margin_left: int | None = 1,
+    margin_right: int | None = 1,
+    line_width: int = 70,
     align: Literal["left", "right", "center"] = "left",
 ):
     if margin_left is None:
@@ -237,30 +228,23 @@ def block(
         char_left = char_right or ""
     if char_right is None:
         char_right = char_left or ""
-    line_width_adjusted = line_width - (margin_left or 0) - (margin_right or 0) - _wcwidth.wcswidth(str(char_left)) - _wcwidth.wcswidth(str(char_right))
-    lines = _textwrap.fill(
-        text=str(text),
-        width=line_width_adjusted,
-        expand_tabs=True,
-        tabsize=4,
-        replace_whitespace=False,
-        drop_whitespace=False,
-    ).splitlines()
-
     if margin_top is None:
         margin_top = margin_bottom
     if margin_bottom is None:
         margin_bottom = margin_top
+    lines = str(text).splitlines()
+    max_line_width = max(max(_wcwidth.wcswidth(_sgr.remove_sequence(line)) for line in lines), line_width)
     if margin_top:
-        lines = [" " * line_width_adjusted] * margin_top + lines
+        lines = [" " * max_line_width] * margin_top + lines
     if margin_bottom:
-        lines = lines + [" " * line_width_adjusted] * margin_bottom
+        lines = lines + [" " * max_line_width] * margin_bottom
     formatted_lines = []
     for line in lines:
-        screen_width = _wcwidth.wcswidth(line)
-        char_width = len(line)
+        line_sanitized = _sgr.remove_sequence(line)
+        screen_width = _wcwidth.wcswidth(line_sanitized)
+        char_width = len(line_sanitized)
         extra_padding = char_width - screen_width
-        width = line_width_adjusted + extra_padding
+        width = max_line_width + extra_padding + len(line) - len(line_sanitized)
         if align == "left":
             line = line.ljust(width)
         elif align == "right":
@@ -283,15 +267,12 @@ def block(
         char_top = char_bottom or ""
     if char_bottom is None:
         char_bottom = char_top or ""
-
     if char_top:
-        total_line_width = line_width - _wcwidth.wcswidth(
-            str(char_top_left)) - _wcwidth.wcswidth(str(char_top_right))
+        total_line_width = max_line_width + (margin_left or 0) + (margin_right or 0)
         line_top = f"{char_top_left}{char_top * total_line_width}{char_top_right}"
         formatted_lines.insert(0, line_top)
     if char_bottom:
-        total_line_width = line_width - _wcwidth.wcswidth(
-            str(char_bottom_left)) - _wcwidth.wcswidth(str(char_bottom_right))
+        total_line_width = max_line_width + (margin_left or 0) + (margin_right or 0)
         line_bottom = f"{char_bottom_left}{char_bottom * total_line_width}{char_bottom_right}"
         formatted_lines.append(line_bottom)
     return "\n".join(formatted_lines)
@@ -321,5 +302,5 @@ def inline(
         text = " " * margin_left + text
     if margin_right:
         text = text + " " * margin_right
-    text_box = _sgr.apply_sequence(text, sequence, reset=True)
+    text_box = _sgr.apply_sequence(text, sequence, reset=True) if sequence != _sgr.reset_sequence() else text
     return f"{char_left}{text_box}{char_right}"
