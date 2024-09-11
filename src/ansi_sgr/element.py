@@ -42,7 +42,7 @@ def code_block(
     char_top_right: Stringable | None = "┓",
     char_bottom_left: Stringable | None = "┗",
     char_bottom_right: Stringable | None = "┛",
-    line_width: int = 70,
+    line_width: int = 50,
 ):
     title = str(title)
     code = str(code)
@@ -156,7 +156,7 @@ def admonition(
     char_top_right: Stringable | None = "┓",
     char_bottom_left: Stringable | None = "┗",
     char_bottom_right: Stringable | None = "┛",
-    line_width: int = 70,
+    line_width: int = 50,
 ):
     title = str(title)
     if emoji:
@@ -217,7 +217,7 @@ def block(
     margin_bottom: int | None = None,
     margin_left: int | None = 1,
     margin_right: int | None = 1,
-    line_width: int = 70,
+    line_width: int = 50,
     align: Literal["left", "right", "center"] = "left",
 ):
     if margin_left is None:

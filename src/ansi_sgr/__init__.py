@@ -16,4 +16,4 @@ from ansi_sgr.sgr import (
     color_code,
 )
 
-from ansi_sgr import element
+from ansi_sgr import element, protocol
