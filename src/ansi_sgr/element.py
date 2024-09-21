@@ -8,7 +8,7 @@ import ansi_sgr as _sgr
 
 if _TYPE_CHECKING:
     from typing import Literal
-    from pyprotocol import Stringable
+    from protocolman import Stringable
 
 
 def code_block(

@@ -5,7 +5,7 @@ from dataclasses import dataclass as _dataclass, asdict as _asdict
 
 if _TYPE_CHECKING:
     from typing import Literal
-    from pyprotocol import Stringable
+    from protocolman import Stringable
 
 
 @_dataclass

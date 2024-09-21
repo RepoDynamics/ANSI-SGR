@@ -15,10 +15,10 @@ namespaces = true
 
 # ----------------------------------------- Project Metadata -------------------------------------
 [project]
-version = "0.0.0.dev8"
+version = "0.0.0.dev9"
 name = "ANSI-SGR"
 requires-python = ">=3.10"
 dependencies = [
-    "PyProtocol",
-    "wcwidth",
+    "ProtocolMan == 0.0.0.dev2",
+    "wcwidth == 0.2.13",
 ]

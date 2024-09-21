@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING as _TYPE_CHECKING
 import re as _re
 
 if _TYPE_CHECKING:
-    from pyprotocol import Stringable
+    from protocolman import Stringable
 
 
 def format(
