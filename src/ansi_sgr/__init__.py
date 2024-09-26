@@ -10,6 +10,7 @@ from ansi_sgr.sgr import (
     create_sequence,
     create_sequence_from_code,
     apply_sequence,
+    has_sequence,
     remove_sequence,
     reset_sequence,
     text_style_code,

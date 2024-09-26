@@ -81,6 +81,10 @@ def remove_sequence(text: str):
     return _re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]').sub('', text)
 
 
+def has_sequence(text: str) -> bool:
+    return bool(_re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]').search(text))
+
+
 def reset_sequence():
     return create_sequence_from_code(0)
 
